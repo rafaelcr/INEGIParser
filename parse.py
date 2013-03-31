@@ -8,12 +8,12 @@ http://www3.inegi.org.mx/sistemas/descarga/default.aspx?c=28088
 
 Los nombres de archivos y directorios estan basados en la convencion de nombres
 especificada por INEGI
-
 """
 
 __author__ = '@rafaelcr (Rafael Cardenas)'
 
 import csv
+import pymongo
 import sys
 
 class INEGIParser(object):
@@ -31,6 +31,7 @@ class INEGIParser(object):
     Hay ciertas inconsistencias en los nombres y cantidad de columnas entre
     archivos. Algunas de las siguientes lineas tratan de corregirlo.
     """
+    print 'Parseando archivos para entidad %s...' % (self.entidad)
     with open('%s/%sNotas.tsv' % (self.path, self.entidad)) as inegi_tsv:
       for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
         if l == 0 or len(line) == 1:
@@ -79,20 +80,41 @@ class INEGIParser(object):
         elif k.isdigit():
           self.entradas[key][k][source] = entrada[k][source]
 
+  def dbwrite(self):
+    """Escribe los objetos obtenidos a MongoDB en el puerto default.
+    Utiliza database <inegi> y collection <entidades>"""
+    print 'Escribiendo a base de datos...'
+    client = pymongo.MongoClient()
+    db = client['inegi']
+    collection = db['entidades']
+    for e in self.entradas.iterkeys():
+      collection.insert(self.entradas[e])
+
 def main():
   args = sys.argv[1:]
+  usage = 'usage: parse.py {--print | --dbwrite} [directory...]'
   if len(args) < 2:
-    print 'usage: parse.py {--print | --dbhost [database hostname] \
---dbport [database port]} [directory...]'
+    print usage
     sys.exit(1)
+
   printd = False
+  dbwrite = False
   if args[0] == '--print':
     printd = True
     del args[0]
+  elif args[0] == '--dbwrite':
+    dbwrite = True
+    del args[0]
+  else:
+    print usage
+    sys.exit(1)
 
+  print '* Parser INEGI *'
   p = INEGIParser(args[0])
   if printd:
     print p.entradas
+  elif dbwrite:
+    p.dbwrite()
 
 if __name__ == '__main__':
   main()
