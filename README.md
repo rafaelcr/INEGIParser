@@ -18,6 +18,13 @@ Dependencias
 Ejemplo de uso
 ------------
 
+Para correr el proceso completo, basta con ejecutar inegi.sh. Este descarga todo
+desde el servidor de INEGI y comienza el parser. 
+
+    ./inegi.sh
+
+Opcional, se puede correr el parser individualmente:
+
     ./parse.py --dbwrite datos/*
 
 Con estas opciones, el script procesa todas las subcarpetas con la notación de
