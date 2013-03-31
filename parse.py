@@ -21,12 +21,21 @@ class INEGIParser(object):
   def __init__(self, directory):
     self.columnas = None
     self.entradas = {}
+    self.notas = {}
     self.path = directory.strip('/')
     self.entidad = self.path.split('/')[-1:][0][:-3]
     self.parse()
 
   def parse(self):
-    """Parsea los archivos hacia diccionarios."""
+    """Parsea los archivos hacia diccionarios.
+    Hay ciertas inconsistencias en los nombres y cantidad de columnas entre
+    archivos. Algunas de las siguientes lineas tratan de corregirlo.
+    """
+    with open('%s/%sNotas.tsv' % (self.path, self.entidad)) as inegi_tsv:
+      for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
+        if l==0 or len(line)==1:
+          continue
+        self.notas[line[0]] = line[2]
     with open('%s/%sValor.tsv' % (self.path, self.entidad)) as inegi_tsv:
       for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
         if not self.columnas:
@@ -45,6 +54,7 @@ class INEGIParser(object):
         self.parseline(line, 'fuente')
 
   def parseline(self, line, source):
+    """Parsea una linea sencilla de TSV"""
     entrada = {}
     for i, val in enumerate(line):
       if val:
@@ -55,16 +65,19 @@ class INEGIParser(object):
     self.organize(entrada, source)
 
   def organize(self, entrada, source):
+    """Inserta lineas en el diccionario de entradas organizadamente.
+    Llave primaria se compone de clave de municipio e ID de indicador"""
     key = '%s-%s' % (entrada['Cve_Municipio'], entrada['Id_Indicador'])
+    if entrada['Id_Indicador'] in self.notas:
+      entrada['Notas'] = self.notas[entrada['Id_Indicador']]
     if not (key in self.entradas):
       self.entradas[key] = entrada
     else:
       for k in entrada.iterkeys():
-        if k.isdigit():
-          if not (k in self.entradas[key]):
+        if not (k in self.entradas[key]):
             self.entradas[key][k] = entrada[k]
-          else:
-            self.entradas[key][k][source] = entrada[k][source]
+        elif k.isdigit():
+          self.entradas[key][k][source] = entrada[k][source]
 
 def main():
   args = sys.argv[1:]
