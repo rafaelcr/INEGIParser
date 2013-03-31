@@ -33,7 +33,7 @@ class INEGIParser(object):
     """
     with open('%s/%sNotas.tsv' % (self.path, self.entidad)) as inegi_tsv:
       for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
-        if l==0 or len(line)==1:
+        if l == 0 or len(line) == 1:
           continue
         self.notas[line[0]] = line[2]
     with open('%s/%sValor.tsv' % (self.path, self.entidad)) as inegi_tsv:
@@ -49,7 +49,7 @@ class INEGIParser(object):
         self.parseline(line, 'unidades')
     with open('%s/%sFuente.tsv' % (self.path, self.entidad)) as inegi_tsv:
       for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
-        if l==0:
+        if l == 0:
           continue
         self.parseline(line, 'fuente')
 
@@ -81,12 +81,18 @@ class INEGIParser(object):
 
 def main():
   args = sys.argv[1:]
-  if not args:
-    print 'usage: parse.py [directory...]'
+  if len(args) < 2:
+    print 'usage: parse.py {--print | --dbhost [database hostname] \
+--dbport [database port]} [directory...]'
     sys.exit(1)
+  printd = False
+  if args[0] == '--print':
+    printd = True
+    del args[0]
 
   p = INEGIParser(args[0])
-  print p.entradas
+  if printd:
+    print p.entradas
 
 if __name__ == '__main__':
   main()
