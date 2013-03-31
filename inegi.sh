@@ -3,6 +3,7 @@
 # INEGI cron
 # Descarga TSVs desde INEGI, descomprime, y envia a Parser
 #
+# @rafaelcr (Rafael Cardenas)
 
 echo "Descargando informacion de INEGI..."
 DATOSDIR=$(dirname $0)/datos
@@ -50,3 +51,5 @@ for z in *.zip; do
   unzip $z -d $dir
   rm $z
 done
+
+python $(dirname $0)/parse.py $DATOSDIR/*

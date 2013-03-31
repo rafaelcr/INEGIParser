@@ -59,8 +59,15 @@ class INEGIParser(object):
     entrada = {}
     for i, val in enumerate(line):
       if val:
-        if self.columnas[i].isdigit():
-          entrada[self.columnas[i]] = {source: val}
+        if self.columnas[i].isdigit(): # anios tienen varios atributos
+          rval = val.strip() # trimear whitespace
+          # parsear valores hacia numeros (cuando aplique).
+          # INEGI maneja todos los valores en float
+          try:
+            rval = float(rval)
+          except ValueError, e:
+            pass
+          entrada[self.columnas[i]] = {source: rval}
         else:
           entrada[self.columnas[i]] = val
     self.organize(entrada, source)
@@ -92,7 +99,7 @@ class INEGIParser(object):
 
 def main():
   args = sys.argv[1:]
-  usage = 'usage: parse.py {--print | --dbwrite} [directory...]'
+  usage = 'usage: parse.py {--print | --dbwrite} [directories...]'
   if len(args) < 2:
     print usage
     sys.exit(1)
@@ -110,11 +117,12 @@ def main():
     sys.exit(1)
 
   print '* Parser INEGI *'
-  p = INEGIParser(args[0])
-  if printd:
-    print p.entradas
-  elif dbwrite:
-    p.dbwrite()
+  for directory in args:
+    p = INEGIParser(directory)
+    if printd:
+      print p.entradas
+    elif dbwrite:
+      p.dbwrite()
 
 if __name__ == '__main__':
   main()
