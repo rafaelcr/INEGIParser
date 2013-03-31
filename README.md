@@ -46,43 +46,43 @@ poderosas con mucha facilidad.
 ### Ejemplos
 
 Encontrar el estado que haya beneficiado a la mayor cantidad de familias con el
-seguro popular en el 2006 (R: Quintana Roo):  
+seguro popular en el 2006 (R: Guanajuato):  
 
     db.entidades.find({
       "Id_Indicador": "1004000045", 
       "2006.valor":{$ne:null}, 
       "Cve_Municipio":"000"
-      }).sort({"2006.valor": 1}).limit(1).pretty()
+      }).sort({"2006.valor": -1}).limit(1).pretty()
 
     {
-      "_id" : ObjectId("5158b884b2a757fb570da0fe"),
+      "_id" : ObjectId("5158b783b2a757fb57053a3a"),
       "Desc_Municipio" : "Total estatal",
       "Indicador" : "Familias beneficiadas por el seguro popular",
-      "Cve_Entidad" : "23",
+      "Cve_Entidad" : "11",
       "Id_Indicador" : "1004000045",
       "Tema_nivel_3" : "Derechohabiencia y uso de servicios de salud",
       "Tema_nivel_2" : "Salud",
       "Tema_nivel_1" : "Sociedad y Gobierno",
       "2006" : {
         "fuente" : "Instituto de Salud del Gobierno del Estado.",
-        "valor" : 33564
+        "valor" : 504209
       },
       "2007" : {
         "fuente" : "Instituto de Salud del Gobierno del Estado.",
-        "valor" : 59460
+        "valor" : 568573
       },
       "2005" : {
         "fuente" : "Instituto de Salud del Gobierno del Estado.",
-        "valor" : 22034
+        "valor" : 397341
       },
-      "Desc_Entidad" : "Quintana Roo",
+      "Desc_Entidad" : "Guanajuato",
       "2008" : {
         "fuente" : "Instituto de Salud del Gobierno del Estado.",
-        "valor" : 80837
+        "valor" : 620299
       },
       "2009" : {
         "fuente" : "Instituto de Salud del Gobierno del Estado.",
-        "valor" : 108683
+        "valor" : 676987
       },
       "Cve_Municipio" : "000"
     }
