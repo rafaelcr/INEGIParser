@@ -52,4 +52,6 @@ for z in *.zip; do
   rm $z
 done
 
-python $(dirname $0)/parse.py $DATOSDIR/*
+echo "Comenzando parser..."
+cd ..
+python parse.py --dbwrite datos/*

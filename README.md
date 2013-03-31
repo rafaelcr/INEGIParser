@@ -5,7 +5,7 @@ Script de Python que toma los archivos TSV de INEGI para todas las Entidades
 Federativas de México, los parsea a JSON y los transmite hacia una base de datos
 MongoDB.  
 Los archivos son tomados de la sección de 
-[Descarga Masiva](www3.inegi.org.mx/sistemas/descarga/default.aspx?c=28088) 
+[Descarga Masiva](http://www3.inegi.org.mx/sistemas/descarga/default.aspx?c=28088) 
 de la INEGI por un shell script que los descarga y descomprime 
 automáticamente.  
 
@@ -22,19 +22,17 @@ Ejemplo de uso
 
 Con estas opciones, el script procesa todas las subcarpetas con la notación de
 nombre XX\_EEEEEE\_tsv, en donde XX es la clave del estado de 2 dígitos y EEEEEE
-es el nombre del estado bajo los [estándares de nombramiento del INEGI](http://w
-ww3.inegi.org.mx/sistemas/descarga/descargaArchivo.aspx?file=Por+entidad+federat
-iva%2fDescripcion_archivos_txt.txt). El repositorio incluye los datos de Nuevo
-León para pruebas.
+es el nombre del estado bajo los 
+[estandares de nombramiento del INEGI](http://www3.inegi.org.mx/sistemas/descarga/descargaArchivo.aspx?file=Por+entidad+federativa%2fDescripcion_archivos_txt.txt). 
+El repositorio incluye los datos de Nuevo León para pruebas.
 
 Base de Datos
 ------------
 
 Cada uno de los documentos JSON escritos hacia la BD consiste
 en datos de un *indicador* en cierto municipio del país a lo largo del tiempo.
-Los [indicadores de la INEGI](http://www3.inegi.org.mx/sistemas/descarga/descarg
-aArchivo.aspx?file=Por+entidad+federativa%2fTabla_de_contenidos_pdf.pdf) cubren
-estadísticas de población, salud, infraestructura, comunicación, agricultura,
+Los [indicadores de la INEGI](http://www3.inegi.org.mx/sistemas/descarga/descargaArchivo.aspx?file=Por+entidad+federativa%2fTabla_de_contenidos_pdf.pdf) 
+cubren estadísticas de población, salud, infraestructura, comunicación, agricultura,
 etc. Ya que los datos se encuentran en MongoDB, se pueden hacer consultas muy
 poderosas con mucha facilidad.  
 
