@@ -20,35 +20,51 @@ class INEGIParser(object):
 
   def __init__(self, directory):
     self.columnas = None
-    self.valores = {}
-    self.unidades = {}
-    self.fuentes = {}
+    self.entradas = {}
     self.path = directory.strip('/')
     self.entidad = self.path.split('/')[-1:][0][:-3]
     self.parse()
 
   def parse(self):
     """Parsea los archivos hacia diccionarios."""
-    filelist = ['%sValor.tsv' % (self.entidad),
-      '%sUnidadMedida.tsv' % (self.entidad),
-      '%sFuente.tsv' % (self.entidad)]
-    dictlist = [self.valores, self.unidades, self.fuentes]
-    for f, filename in enumerate(filelist):
-      with open('%s/%s' % (self.path, filename), 'r') as inegi_tsv:
-        for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
-          # la primer linea indica las columnas
-          if not self.columnas:
-            self.columnas = line
+    with open('%s/%sValor.tsv' % (self.path, self.entidad)) as inegi_tsv:
+      for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
+        if not self.columnas:
+          self.columnas = line
+          continue
+        self.parseline(line, 'valor')
+    with open('%s/%sUnidadMedida.tsv' % (self.path, self.entidad)) as inegi_tsv:
+      for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
+        if l==0:
+          continue
+        self.parseline(line, 'unidades')
+    with open('%s/%sFuente.tsv' % (self.path, self.entidad)) as inegi_tsv:
+      for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
+        if l==0:
+          continue
+        self.parseline(line, 'fuente')
+
+  def parseline(self, line, source):
+    entrada = {}
+    for i, val in enumerate(line):
+      if val:
+        if self.columnas[i].isdigit():
+          entrada[self.columnas[i]] = {source: val}
+        else:
+          entrada[self.columnas[i]] = val
+    self.organize(entrada, source)
+
+  def organize(self, entrada, source):
+    key = '%s-%s' % (entrada['Cve_Municipio'], entrada['Id_Indicador'])
+    if not (key in self.entradas):
+      self.entradas[key] = entrada
+    else:
+      for k in entrada.iterkeys():
+        if k.isdigit():
+          if not (k in self.entradas[key]):
+            self.entradas[key][k] = entrada[k]
           else:
-            # ignorar la primera linea si ya tenemos las columnas
-            if l == 0:
-              continue
-            entrada = {}
-            for i, val in enumerate(line):
-              if val:
-                entrada[self.columnas[i]] = val
-            dictlist[f][entrada['Id_Indicador']] = entrada
-    print self.valores[0]
+            self.entradas[key][k][source] = entrada[k][source]
 
 def main():
   args = sys.argv[1:]
@@ -57,6 +73,7 @@ def main():
     sys.exit(1)
 
   p = INEGIParser(args[0])
+  print p.entradas
 
 if __name__ == '__main__':
   main()
