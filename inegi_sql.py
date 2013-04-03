@@ -101,11 +101,20 @@ class INEGIParser(object):
     print "Procesando CSV 3/4..."
     with open("datos/%s_tsv/%s_UnidadMedida.tsv" % (path, path)) as inegi_tsv:
       for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
-        if l == 0 and (not line[0].isdigit()): # corregir si viene con columnas
+        if l == 0 and (not line[0].isdigit()):
           continue
         for i, a in enumerate(line[9:]):
           if a:
             self.wunidades(line[7],line[2],line[0],anio[i],a)
+
+    print "Procesando CSV 4/4..."
+    with open("datos/%s_tsv/%s_Fuente.tsv" % (path, path)) as inegi_tsv:
+      for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
+        if l == 0 and (not line[0].isdigit()):
+          continue
+        for i, a in enumerate(line[9:]):
+          if a:
+            self.wfuente(line[7],line[2],line[0],anio[i],a)
 
   def strdecode(self, s):
     if not self.encoding == "utf-8":
@@ -121,7 +130,12 @@ class INEGIParser(object):
   def wunidades(self, indicador, municipio, entidad, anio, unidades):
     self.sql.execute("UPDATE valor SET unidades=%s WHERE indicador=%s \
       AND municipio=%s AND entidad=%s AND anio=%s;", 
-      (unidades,int(indicador),municipio,entidad,anio))
+      (self.strdecode(unidades),int(indicador),municipio,entidad,anio))
+
+  def wfuente(self, indicador, municipio, entidad, anio, fuente):
+    self.sql.execute("UPDATE valor SET fuente=%s WHERE indicador=%s \
+      AND municipio=%s AND entidad=%s AND anio=%s;", 
+      (self.strdecode(fuente).strip(),int(indicador),municipio,entidad,anio))
 
   def wentidad(self, eid, nombre):
     try:
