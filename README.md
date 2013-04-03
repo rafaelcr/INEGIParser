@@ -15,6 +15,10 @@ Dependencias
 * [MongoDB 2.4.1](http://www.mongodb.org/downloads)
 * [pymongo 2.5](http://api.mongodb.org/python/current/)
 
+Para instalar las dependencias usando pip, puedes correr:
+
+    pip install -r requirements.txt
+
 Ejemplo de uso
 ------------
 
