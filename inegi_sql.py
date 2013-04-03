@@ -19,13 +19,16 @@ import sys
 
 class INEGIParser(object):
 
-  def __init__(self):
-    self.dbconfigure()
+  def __init__(self, database, user, host, directory):
+    self.path = directory.strip('/')
+    self.entidad = self.path.split('/')[-1:][0][:-3]
+    self.dbconfigure(database, user, host)
     self.parse()
     self.dbclose()
 
-  def dbconfigure(self):
-    self.sqlconn = psycopg2.connect("dbname=inegi user=rafaelcr host=localhost")
+  def dbconfigure(self, database, user, host):
+    self.sqlconn = psycopg2.connect("dbname=%s user=%s host=%s" 
+      % (database, user, host))
     self.sqlconn.autocommit = True
     self.sql = self.sqlconn.cursor()
     self.sql.execute("CREATE TABLE IF NOT EXISTS entidad (\
@@ -33,8 +36,9 @@ class INEGIParser(object):
       nombre varchar);")
     self.sql.execute("CREATE TABLE IF NOT EXISTS municipio (\
       entidad varchar(2) references entidad(id),\
-      id varchar(3) PRIMARY KEY,\
-      nombre varchar);")
+      id varchar(3),\
+      nombre varchar,\
+      PRIMARY KEY (entidad, id));")
     self.sql.execute("CREATE TABLE IF NOT EXISTS indicador (\
       id bigint PRIMARY KEY,\
       descripcion varchar,\
@@ -46,22 +50,18 @@ class INEGIParser(object):
       anio integer,\
       valor numeric(20,5),\
       unidades varchar,\
-      fuente varchar);")
+      fuente varchar,\
+      PRIMARY KEY (indicador, municipio, entidad, anio));")
     self.sql.execute("CREATE TABLE IF NOT EXISTS categoria (\
       id serial,\
       nombre varchar PRIMARY KEY,\
       parent integer);")
-    self.sql.execute("CREATE TABLE IF NOT EXISTS nota (\
-      indicador bigint references indicador(id),\
-      notas varchar);")
 
   def dbclose(self):
     self.sql.close()
     self.sqlconn.close()
 
   def parse(self):
-    # path = "00_NacionalyEntidadesFederativas"
-    path = "01_Aguascalientes"
     # el csv de nacional no trae las columnas de los anios como las estatales,
     # y no son provistos en ningun archivo
     anio = [1895,1900,1910,1921,1930,1940,1950,1960,1970,1980,1981,1982,1983,
@@ -70,11 +70,12 @@ class INEGIParser(object):
 
     # determinar encoding de csv. algunos malamente no vienen en utf-8
     fenc = subprocess.Popen(["file","--mime-encoding",
-      "datos/%s_tsv/%s_Valor.tsv" % (path, path)], stdout=subprocess.PIPE)
+      "%s/%sValor.tsv" % (self.path, self.entidad)], stdout=subprocess.PIPE)
     self.encoding = fenc.stdout.read().split(':')[1].strip()
 
+    print 'Parseando archivos para entidad %s...' % (self.entidad)
     print "Procesando CSV 1/4..."
-    with open("datos/%s_tsv/%s_Valor.tsv" % (path, path)) as inegi_tsv:
+    with open("%s/%sValor.tsv" % (self.path, self.entidad)) as inegi_tsv:
       for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
         if l == 0 and (not line[0].isdigit()): # corregir si viene con columnas
           continue
@@ -89,7 +90,7 @@ class INEGIParser(object):
             self.wvalor(line[7],line[2],line[0],anio[i],a)
 
     print "Procesando CSV 2/4..."
-    with open('datos/%s_tsv/%s_Notas.tsv' % (path, path)) as inegi_tsv:
+    with open("%s/%sNotas.tsv" % (self.path, self.entidad)) as inegi_tsv:
       for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
         if l == 0: # ignorar nombres de columnas
           continue
@@ -99,7 +100,7 @@ class INEGIParser(object):
           self.wnota(line[0],line[2])
 
     print "Procesando CSV 3/4..."
-    with open("datos/%s_tsv/%s_UnidadMedida.tsv" % (path, path)) as inegi_tsv:
+    with open("%s/%sUnidadMedida.tsv" % (self.path, self.entidad)) as inegi_tsv:
       for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
         if l == 0 and (not line[0].isdigit()):
           continue
@@ -108,7 +109,7 @@ class INEGIParser(object):
             self.wunidades(line[7],line[2],line[0],anio[i],a)
 
     print "Procesando CSV 4/4..."
-    with open("datos/%s_tsv/%s_Fuente.tsv" % (path, path)) as inegi_tsv:
+    with open("%s/%sFuente.tsv" % (self.path, self.entidad)) as inegi_tsv:
       for l, line in enumerate(csv.reader(inegi_tsv, dialect="excel-tab")):
         if l == 0 and (not line[0].isdigit()):
           continue
@@ -178,9 +179,21 @@ class INEGIParser(object):
 
 def main():
   args = sys.argv[1:]
+  usage = "usage: inegi_sql.py -d[database] -u[user] -h[host] [directories...]"
+  if len(args) < 4:
+    print usage
+    sys.exit(1)
+
+  database = args[0][2:]
+  del args[0]
+  user = args[0][2:]
+  del args[0]
+  host = args[0][2:]
+  del args[0]
 
   print '* Parser INEGI *'
-  p = INEGIParser()
+  for directory in args:
+    p = INEGIParser(database, user, host, directory)
 
 if __name__ == '__main__':
   main()
