@@ -99,7 +99,7 @@ class INEGIParser(object):
 
 def main():
   args = sys.argv[1:]
-  usage = 'usage: parse.py {--print | --dbwrite} [directories...]'
+  usage = 'usage: inegi_nosql.py {--print | --dbwrite} [directories...]'
   if len(args) < 2:
     print usage
     sys.exit(1)
