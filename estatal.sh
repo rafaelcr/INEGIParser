@@ -51,7 +51,3 @@ for z in *.zip; do
   unzip $z -d $dir
   rm $z
 done
-
-echo "Comenzando parser..."
-cd ..
-python parse.py --dbwrite datos/*
